@@ -5,8 +5,8 @@
 ### First, install necessary libraries and set working directory
 
 options(stringsAsFactors = FALSE)
-source("http://bioconductor.org/biocLite.R")
-biocLite("affy")                              ### Use bioconductor to download new libraries
+#source("http://bioconductor.org/biocLite.R")
+#biocLite("affy")                              ### Use bioconductor to download new libraries
 
 library(affy) ### Load your library every time
 library(GEOquery)
@@ -14,6 +14,7 @@ library(limma)
 library(WGCNA)
 library(sva)
 library(biomaRt)
+library(Biobase)
 
 setwd("C:/Users/Jill/Dropbox/DHGLab/Tutorials/Microarray/")
 
@@ -42,36 +43,36 @@ setwd("C:/Users/Jill/Dropbox/DHGLab/Tutorials/Microarray/")
 # getGEO() to get phenotype data for entire experiment - datMeta
 gse <- getGEO("GSE20295", GSEMatrix =TRUE,getGPL=FALSE)
 
-datMeta = pData(gse[[1]])
-rownames(datMeta) = datMeta[,2]
-datMeta$title = gsub(" ","_",datMeta$title)
-idx = which(datMeta$source_name_ch1 == "Postmortem brain prefrontal cortex")
+datMeta <- pData(gse[[1]])
+rownames(datMeta) <- datMeta[,2]
+datMeta$title <- gsub(" ","_",datMeta$title)
+idx <- which(datMeta$source_name_ch1 == "Postmortem brain prefrontal cortex")
 
 # getGEOSuppFiles() to get .CEL files to create affy object with expression data for entire experiment - datExpr
 getGEOSuppFiles("GSE20295")
 # Use software such as 7-zip to extract into "GSE20295_RAW"
 # manually change GSM506039_1_1364_BA9_Pm.CEL.gz to GSM506039_1364_BA9_Pm.CEL.gz first - this was an upload error
-filesPFC = paste(datMeta$geo_accession,"_",datMeta$title,".CEL.gz",sep="")[idx]
-data.affy = ReadAffy(celfile.path = "./GSE20295/GSE20295_RAW", filenames = filesPFC)
-datExpr = exprs(data.affy)
-datMeta = datMeta[idx,]
+filesPFC <- paste(datMeta$geo_accession,"_",datMeta$title,".CEL.gz",sep="")[idx]
+data.affy <- ReadAffy(celfile.path = "./GSE20295/GSE20295_RAW", filenames = filesPFC)
+datExpr <- exprs(data.affy)
+datMeta <- datMeta[idx,]
 
 # check ordering
-GSM = rownames(pData(data.affy))
-GSM = substr(GSM,1,9)
-idx = match(GSM, datMeta$geo_accession)
-datMeta = datMeta[idx,] 
+GSM <- rownames(pData(data.affy))
+GSM <- substr(GSM,1,9)
+idx <- match(GSM, datMeta$geo_accession)
+datMeta <- datMeta[idx,] 
 
 # reformat datMeta and datExpr
-datMeta = datMeta[,-c(3:7,14:36)]
-datMeta$characteristics_ch1 = gsub("disease state: control","CTL",datMeta$characteristics_ch1)
-datMeta$characteristics_ch1 = gsub("disease state: Parkinson's disease","PKD",datMeta$characteristics_ch1)
-datMeta$characteristics_ch1.1 = gsub("gender: male","M",datMeta$characteristics_ch1.1)
-datMeta$characteristics_ch1.1 = gsub("gender: female","F",datMeta$characteristics_ch1.1)
-datMeta$characteristics_ch1.2 = gsub("age: ","",datMeta$characteristics_ch1.2)
-datMeta$characteristics_ch1.3 = gsub("brain region: ","",datMeta$characteristics_ch1.3)
-colnames(datMeta)[5:8] = c("Dx","Sex","Age","Region") 
-datMeta$Dx = as.factor(datMeta$Dx)
+datMeta <- datMeta[,-c(3:7,14:36)]
+colnames(datMeta)[5:8] <- c("Dx","Sex","Age","Region")  
+datMeta$Dx <- gsub("disease state: control","CTL",datMeta$Dx)
+datMeta$Dx <- gsub("disease state: Parkinson's disease","PKD",datMeta$Dx)
+datMeta$Dx <- as.factor(datMeta$Dx)
+datMeta$Sex <- gsub("gender: male","M",datMeta$Sex)
+datMeta$Sex <- gsub("gender: female","F",datMeta$Sex)
+datMeta$Age <- gsub("age: ","",datMeta$Age)
+datMeta$Region <- gsub("brain region: ","",datMeta$Region)
 
 ### (b) Download your data to your local computer or server before loading it into your R session
 
@@ -89,51 +90,53 @@ datMeta$Dx = as.factor(datMeta$Dx)
 # getGEO() to get phenotype data for entire experiment - datMeta
 gse <- getGEO("GSE20295",GSEMatrix =TRUE,getGPL=FALSE)
 
-datMeta = pData(gse[[1]])
-rownames(datMeta) = datMeta[,2]
-datMeta$title = gsub(" ","_",datMeta$title)
-idx = which(datMeta$source_name_ch1 == "Postmortem brain prefrontal cortex")
+datMeta <- pData(gse[[1]])
+rownames(datMeta) <- datMeta[,2]
+datMeta$title <- gsub(" ","_",datMeta$title)
+idx <- which(datMeta$source_name_ch1 == "Postmortem brain prefrontal cortex")
 
 # manually change GSM506039_1_1364_BA9_Pm.CEL.gz to GSM506039_1364_BA9_Pm.CEL.gz first - this was an upload error
-data.affy = ReadAffy(celfile.path = "./GSE20295_PFC/GSE20295_RAW")
-datExpr = exprs(data.affy)
-datMeta = datMeta[idx,]
+data.affy <- ReadAffy(celfile.path = "./GSE20295_PFC/GSE20295_RAW")
+datExpr <- exprs(data.affy)
+datMeta <- datMeta[idx,]
 
 # check ordering
-GSM = rownames(pData(data.affy))
-GSM = substr(GSM,1,9)
-idx = match(GSM, datMeta$geo_accession)
-datMeta = datMeta[idx,] 
+GSM <- rownames(pData(data.affy))
+GSM <- substr(GSM,1,9)
+idx <- match(GSM, datMeta$geo_accession)
+datMeta <- datMeta[idx,] 
+colnames(datExpr)=rownames(datMeta)
 
 # reformat datMeta and datExpr
-datMeta = datMeta[,-c(3:7,14:36)]
-datMeta$characteristics_ch1 = gsub("disease state: control","CTL",datMeta$characteristics_ch1)
-datMeta$characteristics_ch1 = gsub("disease state: Parkinson's disease","PKD",datMeta$characteristics_ch1)
-datMeta$characteristics_ch1.1 = gsub("gender: male","M",datMeta$characteristics_ch1.1)
-datMeta$characteristics_ch1.1 = gsub("gender: female","F",datMeta$characteristics_ch1.1)
-datMeta$characteristics_ch1.2 = gsub("age: ","",datMeta$characteristics_ch1.2)
-datMeta$characteristics_ch1.3 = gsub("brain region: ","",datMeta$characteristics_ch1.3)
-colnames(datMeta)[5:8] = c("Dx","Sex","Age","Region") 
-datMeta$Dx = as.factor(datMeta$Dx)
+datMeta <- datMeta[,-c(3:7,14:36)]
+colnames(datMeta)[5:8] <- c("Dx","Sex","Age","Region")  
+datMeta$Dx <- gsub("disease state: control","CTL",datMeta$Dx)
+datMeta$Dx <- gsub("disease state: Parkinson's disease","PKD",datMeta$Dx)
+datMeta$Dx <- as.factor(datMeta$Dx)
+datMeta$Sex <- gsub("gender: male","M",datMeta$Sex)
+datMeta$Sex <- gsub("gender: female","F",datMeta$Sex)
+datMeta$Age <- gsub("age: ","",datMeta$Age)
+datMeta$Region <- gsub("brain region: ","",datMeta$Region)
 
 ###### (2) Quality Control (QC) on Raw Data 
 
 ##primary analysis - examine distribution of expression data across samples
 
-datExpr = log2(datExpr)
+datExpr <- log2(datExpr)
 dim(datExpr)
+
+pdf(file="PreQC_Plots.pdf")
 
 #boxplot
 
-boxplot(datExpr,range=0, col = as.numeric(datMeta$Dx), xaxt='n', xlab = "Array", main = "Boxplot Pre-Normalization", ylab = "Intensity")
+boxplot(datExpr,range=0, col = as.numeric(datMeta$Dx), xaxt='n', xlab = "Array", main = "Boxplot", ylab = "Intensity")
 legend("topright",legend = levels(datMeta$Dx),fill = as.numeric(as.factor(levels(datMeta$Dx))))
 
 #histogram
 
-i=1
-plot(density((datExpr[,i]),na.rm=T),col = as.numeric(datMeta$Dx[i]),
-     main = "Hist of Log2 Exp", xlab="log2 exp",xlim=c(4,16),ylim=c(0,0.5))
-for(i in 2:29){
+i=1; plot(density((datExpr[,i]),na.rm=T),col = as.numeric(datMeta$Dx)[i],
+     main = "Histogram", xlab="log2 exp",xlim=c(4,16),ylim=c(0,0.5))
+for(i in 2:dim(datExpr)[2]){
   lines(density((datExpr[,i]),na.rm=T), col = as.numeric(datMeta$Dx)[i],)
 }
 legend("topright",legend = levels(datMeta$Dx),fill = as.numeric(as.factor(levels(datMeta$Dx))))
@@ -141,130 +144,155 @@ legend("topright",legend = levels(datMeta$Dx),fill = as.numeric(as.factor(levels
 #mdsplot
 
 mds = cmdscale(dist(t(datExpr)),eig=TRUE)
-plot(mds$points,col=as.numeric(datMeta$Dx),pch=19)
+plot(mds$points,col=as.numeric(datMeta$Dx),pch=19,main="MDS")
 legend("topright",legend = levels(datMeta$Dx),fill = as.numeric(as.factor(levels(datMeta$Dx))))
+
+dev.off()
 
 ###### (3) Normalization
 
-datExpr = rma(data.affy, background=T, normalize=T, verbose=T)
-datExpr = exprs(datExpr)
+datExpr <- rma(data.affy, background=T, normalize=T, verbose=T)
+datExpr <- exprs(datExpr)
 
 ###### (4) Batch Correction
 
-batch = protocolData(data.affy)$ScanDate
-batch = substr(batch,1,8)
-batch = as.factor(batch)
-table(batch)
-datMeta$Batch = batch
+pdf("BatchPlots.pdf")
 
-plot(mds$points,col=as.numeric(datMeta$Batch),pch=19)
+batch <- protocolData(data.affy)$ScanDate
+batch <- substr(batch,1,8)
+batch <- as.factor(batch)
+table(batch)
+datMeta$Batch <- batch
+
+plot(mds$points,col = as.numeric(datMeta$Batch),pch=19,main="MDS Batch")
 legend("topright",legend = levels(datMeta$Batch),fill = as.numeric(as.factor(levels(datMeta$Batch))))
+
+# create a datAll expression set object which stores both datMeta and datExpr
+# this object will be useful going forward when we have to remove samples from our analysis
+
+datMeta_proc <- new("AnnotatedDataFrame",data=datMeta)
+colnames(datExpr) <- rownames(datMeta)
+
+datAll <- new("ExpressionSet",exprs=datExpr,phenoData=datMeta_proc)
+rm(datExpr,datMeta,datMeta_proc)  ## we don't need them anymore!
 
 # remove singular batches
-to_remove = (datMeta$Batch == "09/04/03")
-datExpr = datExpr[,!to_remove]
-datMeta = datMeta[!to_remove,]
-datMeta$Batch = droplevels(datMeta$Batch)
+to_remove <- (pData(datAll)$Batch == "09/04/03")
+datAll <- datAll[,!to_remove]
+pData(datAll)$Batch <- droplevels(pData(datAll)$Batch)
 
 # remove batch contributions from expression
-mod = model.matrix(~datMeta$Dx)   
-batch = as.factor(datMeta$Batch)
-datExpr.combat = ComBat(dat = datExpr,batch = batch,mod = mod)
+mod <- model.matrix(~pData(datAll)$Dx)   
+batch <- as.factor(pData(datAll)$Batch)
+datExpr.combat <- ComBat(dat = exprs(datAll),batch = batch,mod = mod)
 
-datExpr = datExpr.combat
+exprs(datAll) <- datExpr.combat
 
-mds = cmdscale(dist(t(datExpr)),eig=TRUE)
-plot(mds$points,col=as.numeric(datMeta$Dx),pch=19)
-legend("topright",legend = levels(datMeta$Dx),fill = as.numeric(as.factor(levels(datMeta$Dx))))
+mds = cmdscale(dist(t(exprs(datAll))),eig=TRUE)
+plot(mds$points,col=as.numeric(pData(datAll)$Dx),pch=19,main="MDS Diagnosis Post-ComBat")
+legend("topright",legend = levels(pData(datAll)$Dx),fill = as.numeric(as.factor(levels(pData(datAll)$Dx))))
 
-plot(mds$points,col=as.numeric(datMeta$Batch),pch=19)
-legend("topright",legend = levels(datMeta$Batch),fill = as.numeric(as.factor(levels(datMeta$Batch))))
+plot(mds$points,col=as.numeric(pData(datAll)$Batch),pch=19,main="MDS Batch Post-ComBat")
+legend("topright",legend = levels(pData(datAll)$Batch),fill = as.numeric(as.factor(levels(pData(datAll)$Batch))))
+
+dev.off()
 
 ###### (5) Outlier Removal
 
-colnames(datExpr)=datMeta$geo_accession
-tree = hclust(dist(t(datExpr)), method="average")
+pdf(file="Outliers.pdf")
+
+tree <- hclust(dist(t(exprs(datAll))), method="average")
 plot(tree)
 
-normadj = (0.5 + 0.5*bicor(datExpr))^2
-netsummary = fundamentalNetworkConcepts(normadj)
-C = netsummary$Connectivity
-Z.C = (C-mean(C))/sqrt(var(C))
-to_keep = abs(Z.C) < 2
-table(to_keep)
-colnames(datExpr)[!to_keep]
+normadj <- (0.5 + 0.5*bicor(exprs(datAll)))^2
+netsummary <- fundamentalNetworkConcepts(normadj)
+C <- netsummary$Connectivity
+Z.C <- (C-mean(C))/sqrt(var(C))
 
-datExpr = datExpr[,to_keep]
-datMeta = datMeta[to_keep,]
+datLabel <- pData(datAll)$Dx
+plot(1:length(Z.C),Z.C,main="Outlier Plot",xlab = "Samples",ylab="Connectivity Z Score")
+text(1:length(Z.C),Z.C,label=datLabel,pos=3,cex=0.6)
+abline(h= -2, col="red")
+
+to_keep <- abs(Z.C) < 2
+table(to_keep)
+colnames(exprs(datAll))[!to_keep]
+
+datAll <- datAll[,to_keep]
+
+dev.off()
 
 ###### (6) QC on Normalized Data
 
-dim(datExpr)
-dim(datMeta)
+dim(datAll)
+
+pdf(file="PostQC_Plots.pdf")
 
 #boxplot
 
-boxplot(datExpr,range=0, col = as.numeric(datMeta$Dx), xaxt='n', xlab = "Array", main = "Boxplot Normalized", ylab = "Intensity")
-legend("topright",legend = levels(datMeta$Dx),fill = as.numeric(as.factor(levels(datMeta$Dx))))
+boxplot(exprs(datAll),range=0, col = as.numeric(pData(datAll)$Dx), xaxt='n', xlab = "Array", main = "Boxplot", ylab = "Intensity")
+legend("topright",legend = levels(pData(datAll)$Dx),fill = as.numeric(as.factor(levels(pData(datAll)$Dx))))
 
 #histogram
 
-i=1
-plot(density((datExpr[,i]),na.rm=T),col = as.numeric(datMeta$Dx[i]),main = "Hist of Normalized Exp", xlab="log2 exp")
-for(i in 2:27){
-  lines(density((datExpr[,i]),na.rm=T), col = as.numeric(datMeta$Dx)[i],)
+i=1; plot(density((exprs(datAll)[,i]),na.rm=T),col = as.numeric(pData(datAll)$Dx[i]),
+          main = "Histogram", xlab="log2 exp")
+for(i in 2:dim(exprs(datAll))[2]){
+  lines(density((exprs(datAll)[,i]),na.rm=T), col = as.numeric(pData(datAll)$Dx)[i],)
 }
-legend("topright",legend = levels(datMeta$Dx),fill = as.numeric(as.factor(levels(datMeta$Dx))))
+legend("topright",legend = levels(pData(datAll)$Dx),fill = as.numeric(as.factor(levels(pData(datAll)$Dx))))
 
 #mdsplot
 
-mds = cmdscale(dist(t(datExpr)),eig=TRUE)
-plot(mds$points,col=as.numeric(datMeta$Dx),pch=19)
-legend("topright",legend = levels(datMeta$Dx),fill = as.numeric(as.factor(levels(datMeta$Dx))))
+mds = cmdscale(dist(t(exprs(datAll))),eig=TRUE)
+plot(mds$points,col=as.numeric(pData(datAll)$Dx),pch=19,main="MDS")
+legend("topright",legend = levels(pData(datAll)$Dx),fill = as.numeric(as.factor(levels(pData(datAll)$Dx))))
+
+dev.off()
 
 ###### (7) Covariate Analysis
 
+pdf(file="CovariatesANOVA.pdf")
 
-par(mfrow=c(2,2))
-par(mar=c(3,2,3,2))
+plot(pData(datAll)$Dx, ylab="Number", main="Subjects")
 
-plot(datMeta$Dx, ylab="Number", main="Subjects")
-
-for(i in c(6,7,9)){
+for(i in c("Sex","Age","Batch")){
   
-  if( i == 6 || i == 9 ){
+  if( i == "Sex" || i == "Batch" ){
     print(paste(i,"Character Graph",sep=" "))
-    A = anova(lm(as.numeric(as.factor(datMeta[,i])) ~ datMeta$Dx)); p = A$"Pr(>F)"[1]   
-    plot(as.factor(datMeta[,i]) ~ datMeta$Dx, main=paste(colnames(datMeta)[i]," p=", signif(p,2)), ylab="", xlab="")
+    A = anova(lm(as.numeric(as.factor(pData(datAll)[,i])) ~ pData(datAll)$Dx)); p = A$"Pr(>F)"[1]   
+    plot(as.factor(pData(datAll)[,i]) ~ pData(datAll)$Dx, main=paste(i," p=", signif(p,2)), ylab="", xlab="")
   }
   else{
     print(paste(i,"Number Graph",sep=" "))
-    A = anova(lm(as.numeric(datMeta[,i]) ~ datMeta$Dx)); p = A$"Pr(>F)"[1]   
-    plot(as.numeric(as.character(datMeta[,i])) ~ datMeta$Dx, main=paste(colnames(datMeta)[i]," p=", signif(p,2)), ylab="", xlab="")
+    A = anova(lm(as.numeric(pData(datAll)[,i]) ~ pData(datAll)$Dx)); p = A$"Pr(>F)"[1]   
+    plot(as.numeric(as.character(pData(datAll)[,i])) ~ pData(datAll)$Dx, main=paste(i," p=", signif(p,2)), ylab="", xlab="")
   }
 }
 
+dev.off()
+
 ###### (8) Annotate Probes
 
-ensembl = useMart(biomart="ENSEMBL_MART_ENSEMBL",dataset="hsapiens_gene_ensembl",host="www.ensembl.org")
+ensembl <- useMart(biomart="ENSEMBL_MART_ENSEMBL",dataset="hsapiens_gene_ensembl",host="www.ensembl.org")
 
-f = listFilters(ensembl)
-a = listAttributes(ensembl)
+f <- listFilters(ensembl)
+a <- listAttributes(ensembl)
 
 identifier <- "affy_hg_u133a"
 getinfo <- c("affy_hg_u133a", "ensembl_gene_id", "entrezgene", "external_gene_name")
-geneDat <- getBM(attributes = getinfo, filters=identifier, values = rownames(datExpr),mart=ensembl)
+geneDat <- getBM(attributes = getinfo, filters=identifier, values = rownames(exprs(datAll)),mart=ensembl)
 
-idx = match(rownames(datExpr),geneDat$affy_hg_u133a)
-geneDat = geneDat[idx,]
+idx <- match(rownames(exprs(datAll)),geneDat$affy_hg_u133a)
+geneDat <- geneDat[idx,]
 
 table(is.na(geneDat$ensembl_gene_id))
 
-to_keep = (is.na(geneDat$ensembl_gene_id) == FALSE)
-geneDat = geneDat[to_keep,]
-datExpr = datExpr[to_keep,]
+to_keep <- (is.na(geneDat$ensembl_gene_id) == FALSE)
+geneDat <- geneDat[to_keep,]
+datAll <- datAll[to_keep,]
 
-dim(datExpr)
+dim(datAll)
 dim(geneDat)
 
 ###### (9) Collapse Rows
@@ -272,32 +300,35 @@ dim(geneDat)
 table(duplicated(geneDat$affy_hg_u133a))
 table(duplicated(geneDat$ensembl_gene_id))
 
-CR = collapseRows(datExpr, rowGroup = geneDat$ensembl_gene_id, rowID = geneDat$affy_hg_u133a)
-datExpr = CR$datETcollapsed
-idx = match(CR$group2row[,"selectedRowID"], geneDat$affy_hg_u133a)
-geneDat = geneDat[idx,]
-rownames(geneDat) = geneDat$ensembl_gene_id
+CR <- collapseRows(exprs(datAll), rowGroup = geneDat$ensembl_gene_id, rowID = geneDat$affy_hg_u133a)
+exprs(datAll) <- CR$datETcollapsed
+idx <- match(CR$group2row[,"selectedRowID"], geneDat$affy_hg_u133a)
+geneDat <- geneDat[idx,]
+rownames(geneDat) <- geneDat$ensembl_gene_id
 
-dim(datExpr)
+dim(datAll)
 dim(geneDat)
-dim(datMeta)
 
-write.csv(datExpr, file = "DatExpr.csv")
-write.csv(datMeta, file = "DatMeta.csv")
+write.csv(exprs(datAll), file = "datExpr.csv")
+write.csv(pData(datAll), file = "datMeta.csv")
 write.csv(geneDat, file = "geneDat.csv")
+save(datAll,file="datAll.RData")
 
-datExpr=read.csv("DatExpr.csv",row.names=1)
-datMeta=read.csv("DatMeta.csv")
-geneDat=read.csv("geneDat.csv")
+datExpr<-read.csv("datExpr.csv",row.names=1)
+datMeta<-read.csv("datMeta.csv",row.names=1)
+geneDat<-read.csv("geneDat.csv")
+load(file="datAll.RData")
 
 ###### (10) Differential Expression Analysis
 
-datMeta$Sex=factor(datMeta$Sex,levels=c("M","F"))
-mod = model.matrix(~datMeta$Dx+datMeta$Sex+as.numeric(datMeta$Age))
-fit = lmFit(datExpr,mod)
-fit = eBayes(fit)
-tt = topTable(fit,coef = 2,n = Inf,genelist = geneDat)
+pData(datAll)$Sex<-factor(pData(datAll)$Sex,levels=c("M","F"))
+mod <- model.matrix(~pData(datAll)$Dx+pData(datAll)$Sex+as.numeric(pData(datAll)$Age))
+fit <- lmFit(exprs(datAll),mod)
+fit <- eBayes(fit)
+tt <- topTable(fit,coef = 2,n = Inf,genelist = geneDat)
 
-par(mfrow=c(1,1))
+pdf(file="PvalueDistribution.pdf")
 hist(tt$P.Value)
+dev.off()
+
 
