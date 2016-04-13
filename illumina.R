@@ -101,14 +101,14 @@ mds.log2.plot <- data.frame(Sample.Name = rownames(mds.log2$points), Diagnosis =
 p <- ggplot(mds.log2.plot, aes(x = Component.1, y = Component.2, col = Diagnosis)) + geom_point() 
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + xlab("Component 1") + ylab("Component 2") + ggtitle("MDS of Diagnosis")
-CairoPDF(file = "./Illumina/mds_diagnosis", height = 6, width = 7)
+CairoPNG(file = "./Illumina/mds_diagnosis.png", height = 600, width = 700)
 print(p)
 dev.off()
 
 p <- ggplot(mds.log2.plot, aes(x = Component.1, y = Component.2, col = Batch)) + geom_point() 
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + xlab("Component 1") + ylab("Component 2") + ggtitle("MDS of Batch")
-CairoPDF(file = "./Illumina/mds_batch", height = 6, width = 7)
+CairoPNG(file = "./Illumina/mds_batch.png", height = 600, width = 700)
 print(p)
 dev.off()
 
@@ -131,21 +131,21 @@ mds.combat.plot <- data.frame(Sample.Name = rownames(mds.combat$points), Diagnos
 p <- ggplot(mds.combat.plot, aes(x = Component.1, y = Component.2, col = Diagnosis)) + geom_point() 
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + xlab("Component 1") + ylab("Component 2") + ggtitle("MDS of Diagnosis")
-CairoPDF(file = "./Illumina/mds_diagnosis_combat", height = 7, width = 7)
+CairoPNG(file = "./Illumina/mds_diagnosis_combat.png", height = 600, width = 700)
 print(p)
 dev.off()
 
 p <- ggplot(mds.combat.plot, aes(x = Component.1, y = Component.2, col = Batch)) + geom_point() 
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + xlab("Component 1") + ylab("Component 2") + ggtitle("MDS of Batch")
-CairoPDF(file = "./Illumina/mds_batch_combat", height = 6, width = 7)
+CairoPNG(file = "./Illumina/mds_batch_combat.png", height = 600, width = 700)
 print(p)
 dev.off()
 
 #Hierarchichal clustering
 tree.combat <- exprs(lumi.combat) %>% t %>% dist %>% hclust(method = "average")
-CairoPDF("./Illumina/clustering_combat", width = 13, height = 10)
-plot(tree.combat, main = "Hierarchical Clustering Sammples")
+CairoPNG("./Illumina/clustering_combat.png", width = 1300, height = 1000)
+plot(tree.combat, main = "Hierarchical Clustering Samples")
 dev.off()
 
 #Connectivity outliers
@@ -159,7 +159,7 @@ p <- ggplot(connectivity.plot, aes(x = Sample.Num, y = Z.score, label = Sample.N
 p <- p + geom_hline(aes(yintercept = -2)) 
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + xlab("Sample Number") + ylab("Z score") + ggtitle("Sample Connectivity")
-CairoPDF("./Illumina/connectivity_combat", width = 10, height = 10)
+CairoPNG("./Illumina/connectivity_combat.png", width = 1000, height = 1000)
 print(p)
 dev.off()
 
@@ -181,7 +181,7 @@ ggsave(filename = "boxplot_rmout.jpg", plot = p, family = "Oxygen", width = 15 ,
 p <- ggplot(expr.rmout.melt, aes(Intensity, group = Sample.Name, col = Diagnosis)) + geom_density() + theme_bw()
 p <- p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + ggtitle("Histogram of Log2 Expression") + ylab("Density") + xlab("Log2 Expression") 
-CairoPDF("./Illumina/histogram_rmout", height = 5, width = 9)
+CairoPNG("./Illumina/histogram_rmout.png", height = 500, width = 900)
 print(p)
 dev.off()
 
@@ -192,7 +192,7 @@ mds.rmout.plot <- data.frame(Sample.Name = rownames(mds.rmout$points), Diagnosis
 p <- ggplot(mds.rmout.plot, aes(x = Component.1, y = Component.2, col = Diagnosis)) + geom_point() 
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + xlab("Component 1") + ylab("Component 2") + ggtitle("MDS of Diagnosis")
-CairoPDF(file = "./Illumina/mds_diagnosis_rmout", height = 6, width = 7)
+CairoPNG(file = "./Illumina/mds_diagnosis_rmout.png", height = 600, width = 700)
 print(p)
 dev.off()
 
@@ -204,8 +204,8 @@ lm.batch <- lm(Batch ~ Diagnosis, data = pData(lumi.rmout)) %>% anova %>% tidy
 #Covariate plots
 p <- ggplot(pData(lumi.rmout), aes(x = Diagnosis, y = Age)) + geom_boxplot()
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-p <- p + theme(axis.title = element_blank()) + ggtitle(paste("Age (p < ", round(lm.age$p.value[1], 3), "*)", sep = ""))
-CairoPDF("./Illumina/age_boxplot", height = 6, width = 6)
+p <- p + theme(axis.title = element_blank()) + ggtitle(paste("Age (p < ", round(lm.age$p.value[1], 3), ")", sep = ""))
+CairoPNG("./Illumina/age_boxplot.png", height = 600, width = 600)
 plot(p)
 dev.off()
 
@@ -213,7 +213,7 @@ p <- ggplot(pData(lumi.rmout), aes(x = Diagnosis, fill = Sex)) + geom_bar()
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + theme(axis.title = element_blank(), legend.title = element_blank()) 
 p <- p + ggtitle(paste("Sex (p < ", round(lm.sex$p.value[1], 3), ")", sep = "")) 
-CairoPDF("./Illumina/sex_barplot", height = 6, width = 6)
+CairoPNG("./Illumina/sex_barplot.png", height = 600, width = 600)
 plot(p)
 dev.off()
 
@@ -221,7 +221,7 @@ p <- ggplot(pData(lumi.rmout), aes(x = Diagnosis, fill = factor(Batch))) + geom_
 p <- p + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + theme(axis.title = element_blank(), legend.title = element_blank()) 
 p <- p + ggtitle(paste("Batch (p < ", round(lm.batch$p.value[1], 3), ")", sep = "")) 
-CairoPDF("./Illumina/batch_barplot", height = 6, width = 6)
+CairoPNG("./Illumina/batch_barplot.png", height = 600, width = 600)
 plot(p)
 dev.off()
 
