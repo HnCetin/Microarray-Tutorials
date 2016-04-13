@@ -9,6 +9,7 @@ library(GEOquery)
 
 #For batch correction and PEER
 library(sva)
+library(broom)
 
 #Data arrangement
 library(reshape2)
@@ -18,7 +19,6 @@ library(dplyr)
 #Functional programming
 library(magrittr)
 library(purrr)
-library(functional)
 
 #String operations
 library(stringr)
@@ -72,14 +72,16 @@ rep.names <- str_detect(pdata.lumi$sampleID, "rep")
 lumi.known <- lumi.raw[,known.names & !rep.names]
 lumi.known$Batch <- str_replace(pdata.geo$Batch, "^.*: ", "") %>% factor %>% as.integer
 sampleNames(lumi.known) <- paste(lumi.known$Subject.ID, lumi.known$Region, sep = "_")
-lumi.log2 <- lumiT(lumi.known, "log2")
+
+lumi.ca3 <- lumi.known[,lumi.known$Region == "CA3"]
+lumi.log2 <- lumiT(lumi.ca3, "log2")
 
 #Boxplot
 expr.log2 <- exprs(lumi.log2) %>% t %>% data.frame(Sample.Name = sampleNames(lumi.log2), Batch = lumi.log2$Batch, Diagnosis = lumi.log2$Diagnosis)
 expr.log2.melt <- melt(expr.log2, id = c("Sample.Name", "Batch", "Diagnosis"))
 colnames(expr.log2.melt)[4:5] <- c("Symbol", "Intensity")
 
-p <- ggplot(expr.log2.melt, aes(x = Sample.Name, y = value, fill = factor(Batch))) + geom_boxplot() + theme_bw()
+p <- ggplot(expr.log2.melt, aes(x = Sample.Name, y = Intensity, fill = factor(Batch))) + geom_boxplot() + theme_bw()
 p <- p + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1.0))     
 p <- p + ggtitle("Log2 normalized signal intensity") #+ ylab("Intensity") + xlab("Sample") 
 p <- p + theme(legend.position = "none", panel.grid.major = element_blank(), panel.grid.minor = element_blank())
@@ -224,15 +226,10 @@ CairoPDF("batch_barplot", height = 6, width = 6)
 plot(p)
 dev.off()
 
-#Remove covariates
-expr.rmage <- removeBatchEffect(exprs(lumi.rmout), covariates = as.matrix(lumi.rmout$Age))
-lumi.rmage <- lumi.rmout
-exprs(lumi.rmage) <- expr.rmage
-
 #Collapse Rows
-expr.symbols <- featureNames(lumi.rmage) %>% getSYMBOL('lumiHumanAll.db') %>% factor
-expr.collapse <- collapseRows(exprs(lumi.rmage), rowGroup = expr.symbols, rowID = rownames(exprs(lumi.rmage)))
-lumi.collapse <- ExpressionSet(assayData = expr.collapse$datETcollapsed, phenoData = phenoData(lumi.rmage))
+expr.symbols <- featureNames(lumi.rmout) %>% getSYMBOL('lumiHumanAll.db') %>% factor
+expr.collapse <- collapseRows(exprs(lumi.rmout), rowGroup = expr.symbols, rowID = rownames(exprs(lumi.rmout)))
+lumi.collapse <- ExpressionSet(assayData = expr.collapse$datETcollapsed, phenoData = phenoData(lumi.rmout))
 
 #Differential Expression
 model.limma <- model.matrix( ~ 0 + Diagnosis + Sex, data = pData(lumi.collapse))
