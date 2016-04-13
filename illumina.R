@@ -90,7 +90,7 @@ ggsave(filename = "./Illumina/boxplot_normalized.jpg", plot = p, family = "Oxyge
 p <- ggplot(expr.log2.melt, aes(Intensity, group = Sample.Name, col = Diagnosis)) + geom_density() + theme_bw()
 p <- p + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 p <- p + ggtitle("Histogram of Log2 Expression") + ylab("Density") + xlab("Log2 Expression") 
-CairoSVG("./Illumina/histogram_log2", height = 5, width = 9)
+CairoPNG("./Illumina/histogram_log2.png", height = 500, width = 900)
 print(p)
 dev.off()
 
