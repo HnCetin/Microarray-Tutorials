@@ -1,5 +1,4 @@
 #For DE analysis
-library(Biobase)
 library(limma)
 library(lumiHumanIDMapping)
 library(lumiHumanAll.db)
